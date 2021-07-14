@@ -6,7 +6,11 @@ API to create and retrieve logistics orders
 
 execute `generate.sh` and manually merge `composer.template.json` into the generated `composer.json` to meet licensing and authorship requirements.
 
-[Mock-Server](https://virtserver.swaggerhub.com/martinWelte/)
+## Mock Server
+
+in the plugin root folder run `docker run -ti -p 8888:8080 \
+    -v $(pwd):/opt/imposter/config \
+    outofcoffee/imposter-openapi`
 
 ## Installation & Usage
 
