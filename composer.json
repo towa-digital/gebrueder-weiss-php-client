@@ -1,0 +1,26 @@
+{
+	"name": "towa/gbw-sdk",
+	"description": "Gebrüder Weiss Swagger generated API SDK",
+	"type": "package",
+	"homepage": "https://app.swaggerhub.com/apis/martinWelte/logistics-order/1.0.0",
+	"license": "GPL-3.0-only",
+	"require": {
+		"php": ">=5.5",
+		"ext-curl": "*",
+		"ext-json": "*",
+		"ext-mbstring": "*",
+		"guzzlehttp/guzzle": "^6.2"
+	},
+	"require-dev": {
+			"phpunit/phpunit": "^4.8",
+			"squizlabs/php_codesniffer": "~2.6",
+			"friendsofphp/php-cs-fixer": "~1.12"
+	},
+	"authors": [
+		{
+				"name": "Philipp Hemmer",
+				"email": "philipp.hemmer@towa.at"
+		}
+	],
+	"minimum-stability": "stable"
+}
