@@ -2,6 +2,9 @@
 
 API to create and retrieve logistics orders
 
+## Generation
+
+execute `generate.sh` and manually merge `composer.template.json` into the generated `composer.json` to meet licensing and authorship requirements.
 ## Installation & Usage
 
 ### Requirements
