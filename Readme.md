@@ -19,12 +19,12 @@ To install the bindings via [Composer](https://getcomposer.org/), add the follow
 {
   "repositories": [
     {
-      "type": "vcs",
-      "url": "https://github.com/GIT_USER_ID/GIT_REPO_ID.git"
+      "type": "git",
+      "url": "git@github.com:towa-digital/gebrueder-weiss-php-client.git"
     }
   ],
   "require": {
-    "GIT_USER_ID/GIT_REPO_ID": "*@dev"
+    "towa/gbw-sdk": "*@dev"
   }
 }
 ```
