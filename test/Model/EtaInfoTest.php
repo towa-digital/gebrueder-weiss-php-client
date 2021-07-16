@@ -5,7 +5,7 @@
  * PHP version 7.2
  *
  * @category Class
- * @package  TowaGebruederWeissSDK
+ * @package  Towa\GebruederWeissSDK
  * @author   OpenAPI Generator team
  * @link     https://openapi-generator.tech
  */
@@ -27,7 +27,7 @@
  * Please update the test case below to test the model.
  */
 
-namespace TowaGebruederWeissSDK\Test\Model;
+namespace Towa\GebruederWeissSDK\Test\Model;
 
 use PHPUnit\Framework\TestCase;
 
@@ -36,7 +36,7 @@ use PHPUnit\Framework\TestCase;
  *
  * @category    Class
  * @description describes a time window for the estimated time of arrival
- * @package     TowaGebruederWeissSDK
+ * @package     Towa\GebruederWeissSDK
  * @author      OpenAPI Generator team
  * @link        https://openapi-generator.tech
  */

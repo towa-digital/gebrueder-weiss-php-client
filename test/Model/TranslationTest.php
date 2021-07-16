@@ -5,7 +5,7 @@
  * PHP version 7.2
  *
  * @category Class
- * @package  TowaGebruederWeissSDK
+ * @package  Towa\GebruederWeissSDK
  * @author   OpenAPI Generator team
  * @link     https://openapi-generator.tech
  */
@@ -27,7 +27,7 @@
  * Please update the test case below to test the model.
  */
 
-namespace TowaGebruederWeissSDK\Test\Model;
+namespace Towa\GebruederWeissSDK\Test\Model;
 
 use PHPUnit\Framework\TestCase;
 
@@ -36,7 +36,7 @@ use PHPUnit\Framework\TestCase;
  *
  * @category    Class
  * @description the translation object returns a translated text. It shows the requested language, as well as the orignial text. If feasible the origninal text is translated to the requested language. If not feasible, the resolved text contains the English translation
- * @package     TowaGebruederWeissSDK
+ * @package     Towa\GebruederWeissSDK
  * @author      OpenAPI Generator team
  * @link        https://openapi-generator.tech
  */

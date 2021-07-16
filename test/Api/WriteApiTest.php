@@ -4,7 +4,7 @@
  * PHP version 7.2
  *
  * @category Class
- * @package  TowaGebruederWeissSDK
+ * @package  Towa\GebruederWeissSDK
  * @author   OpenAPI Generator team
  * @link     https://openapi-generator.tech
  */
@@ -26,18 +26,18 @@
  * Please update the test case below to test the endpoint.
  */
 
-namespace TowaGebruederWeissSDK\Test\Api;
+namespace Towa\GebruederWeissSDK\Test\Api;
 
-use \TowaGebruederWeissSDK\Configuration;
-use \TowaGebruederWeissSDK\ApiException;
-use \TowaGebruederWeissSDK\ObjectSerializer;
+use \Towa\GebruederWeissSDK\Configuration;
+use \Towa\GebruederWeissSDK\ApiException;
+use \Towa\GebruederWeissSDK\ObjectSerializer;
 use PHPUnit\Framework\TestCase;
 
 /**
  * WriteApiTest Class Doc Comment
  *
  * @category Class
- * @package  TowaGebruederWeissSDK
+ * @package  Towa\GebruederWeissSDK
  * @author   OpenAPI Generator team
  * @link     https://openapi-generator.tech
  */
