@@ -10,7 +10,6 @@
         "rest",
         "api"
     ],
-    "homepage": "https://app.swaggerhub.com/apis/martinWelte/logistics-order/1.0.0",
     "license": "GPL-3.0-only",
     "authors": [
         {
@@ -19,7 +18,7 @@
         }
     ],
     "require": {
-        "php": ">=7.2",
+        "php": ">=7.3",
         "ext-curl": "*",
         "ext-json": "*",
         "ext-mbstring": "*",
