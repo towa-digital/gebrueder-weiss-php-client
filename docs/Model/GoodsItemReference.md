@@ -4,6 +4,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**qualifier** | **string** | qualifier for the goodsitem | [optional]
+**qualifier** | **string** | qualifier for the reference | [optional]
+**reference** | **string** | reference string | [optional]
 
 [[Back to Model list]](../../README.md#models) [[Back to API list]](../../README.md#endpoints) [[Back to README]](../../README.md)

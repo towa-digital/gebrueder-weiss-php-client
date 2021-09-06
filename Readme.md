@@ -1,10 +1,18 @@
 # towa/gbw-sdk
 
-API to create and retrieve logistics orders
+API to create and retrieve logistics orders.
+[Postman Collection](/docs/Logistics%20Order.postman_collection.json)
 
 ## Generation
 
 execute `generate.sh` and manually merge `composer.template.json` into the generated `composer.json` to meet licensing and authorship requirements.
+
+## Mock Server
+
+in the package root folder run `docker run -ti -p 8888:8080 \
+    -v $(pwd):/opt/imposter/config \
+    outofcoffee/imposter-openapi`
+
 ## Installation & Usage
 
 ### Requirements

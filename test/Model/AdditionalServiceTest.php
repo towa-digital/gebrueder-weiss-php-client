@@ -5,7 +5,7 @@
  * PHP version 7.2
  *
  * @category Class
- * @package  TowaGebruederWeissSDK
+ * @package  Towa\GebruederWeissSDK
  * @author   OpenAPI Generator team
  * @link     https://openapi-generator.tech
  */
@@ -27,7 +27,7 @@
  * Please update the test case below to test the model.
  */
 
-namespace TowaGebruederWeissSDK\Test\Model;
+namespace Towa\GebruederWeissSDK\Test\Model;
 
 use PHPUnit\Framework\TestCase;
 
@@ -36,7 +36,7 @@ use PHPUnit\Framework\TestCase;
  *
  * @category    Class
  * @description contains information of an additional service. The availability of an additional service depends on the GW product, in combination with the relation and your contract with GW.
- * @package     TowaGebruederWeissSDK
+ * @package     Towa\GebruederWeissSDK
  * @author      OpenAPI Generator team
  * @link        https://openapi-generator.tech
  */
