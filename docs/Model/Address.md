@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 **postbox** | **string** | postbox of the address | [optional]
 **city** | **string** | city of the address | [optional]
 **zip_code** | **string** | zipcode of the address | [optional]
-**country_code** | **string** | defines the country folowing IS-3166-1 Alpha2, see https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2 | [optional]
+**country_code** | **string** | defines the country following IS-3166-1 Alpha2, see https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2 | [optional]
 **state** | **string** | state or province or territory of the address | [optional]
 **location** | [**Location**](Location.md) | location information | [optional]
 

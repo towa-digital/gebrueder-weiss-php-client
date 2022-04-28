@@ -27,10 +27,18 @@
 
 namespace Towa\GebruederWeissSDK\Test\Api;
 
-use \Towa\GebruederWeissSDK\Configuration;
+use GuzzleHttp\Client;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Psr7\Response;
 use \Towa\GebruederWeissSDK\ApiException;
-use \Towa\GebruederWeissSDK\ObjectSerializer;
 use PHPUnit\Framework\TestCase;
+use Towa\GebruederWeissSDK\Api\DefaultApi;
+use Towa\GebruederWeissSDK\Model\ErrorMessage;
+use Towa\GebruederWeissSDK\Model\InlineObject;
+use Towa\GebruederWeissSDK\Model\LogisticsOrder;
+use Towa\GebruederWeissSDK\Model\LogisticsOrderCallbacks;
+use Towa\GebruederWeissSDK\Model\Translation;
 
 /**
  * DefaultApiTest Class Doc Comment
@@ -103,7 +111,63 @@ class DefaultApiTest extends TestCase
      */
     public function testLogisticsOrderPost()
     {
-        // TODO: implement
-        $this->markTestIncomplete('Not implemented');
+        $mock = new MockHandler([
+            new Response(202, [], null),
+        ]);
+
+        $handlerStack = HandlerStack::create($mock);
+        $client = new Client(['handler' => $handlerStack]);
+
+        $api = new DefaultApi($client);
+
+        $payload = new InlineObject();
+        $payload->setLogisticsOrder(new LogisticsOrder());
+        $callbacks = new LogisticsOrderCallbacks();
+        $callbacks->setSuccessCallback("https://example.com/success");
+        $callbacks->setFulfillmentCallback("http://example.com/fullfilled");
+        $payload->setCallbacks($callbacks);
+        $response = $api->logisticsOrderPost("de-DE", $payload);
+
+        $this->assertCount(1, $response);
+    }
+
+    public function testLogisticsOrderPostBadRequest()
+    {
+        $errorTranslation = new Translation();
+        $errorTranslation->setTranslationOriginal("Invalid item");
+
+        $error = new ErrorMessage();
+        $error->setText($errorTranslation);
+
+        $mock = new MockHandler([
+            new Response(400, [], '{
+                "text": {
+                  "translationOriginal": {
+                    "text": "Invalid item"
+                  }
+                }
+              }'),
+        ]);
+
+        $handlerStack = HandlerStack::create($mock);
+        $client = new Client(['handler' => $handlerStack]);
+
+        $api = new DefaultApi($client);
+
+        try {
+            $api = new DefaultApi($client);
+
+            $payload = new InlineObject();
+            $payload->setLogisticsOrder(new LogisticsOrder());
+            $callbacks = new LogisticsOrderCallbacks();
+            $callbacks->setSuccessCallback("https://example.com/success");
+            $callbacks->setFulfillmentCallback("http://example.com/fullfilled");
+            $payload->setCallbacks($callbacks);
+
+           $api->logisticsOrderPost("de-DE", $payload);
+           $this->assertTrue(false);
+        } catch (ApiException $e) {
+            $this->assertSame($error->getText()->getTranslationOriginal(), $e->getResponseObject()->getText()->getTranslationOriginal()->getText());
+        }
     }
 }

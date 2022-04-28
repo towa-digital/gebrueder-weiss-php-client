@@ -1,27 +1,28 @@
 openapi: 3.0.0
 info:
   title: Logistics Order
-  version: 1.0.0
   description: API to create and retrieve logistics orders
   contact:
     name: API Support
-    url: 'https://developer.my.gw-world.com/support'
+    url: https://developer.my.gw-world.com/support
+  version: 1.0.0
   x-category: logistics
   x-apiId: logisticsOrderCustomer
   x-audience: external partner
 servers:
-  - url: 'https://apitest.gw-world.com:443/logistics/logistics-order/1.0.0'
+  - url: https://test.api.gw-world.com/logistics/logistics-order/1.0.0
 paths:
   /logistics-order:
     post:
       summary: create a logisticsOrder
       description: posts an logisticsOrder structure to GW to create a new logisticsOrder
       parameters:
-        - in: header
-          description: >-
-            set the response language, default is en-US - defines the language
-            following the BCP 47 standard https://tools.ietf.org/html/bcp47
-          name: accept-language
+        - name: accept-language
+          in: header
+          description: set the response language, default is en-US - defines the language following the BCP 47 standard https://tools.ietf.org/html/bcp47
+          required: false
+          style: simple
+          explode: false
           schema:
             $ref: '#/components/schemas/Language'
       requestBody:
@@ -35,79 +36,52 @@ paths:
                   $ref: '#/components/schemas/LogisticsOrder'
                 callbacks:
                   type: object
-                  description: >-
-                    set of callback URL for asynchronous event respones with
-                    different purpose
                   properties:
                     successCallback:
-                      description: >-
-                        callback for positive event, order has been accepted and
-                        will be executed
                       $ref: '#/components/schemas/CallbackUrl'
-                    fullfilledCallback:
-                      description: callback for fullfillment
+                    fulfillmentCallback:
                       $ref: '#/components/schemas/CallbackUrl'
+                  description: set of callback URL for asynchronous event responses with different purpose
       responses:
         '202':
+          description: Logistics order accepted, confirmation will be sent later
           content:
             application/json:
               schema:
                 type: object
                 additionalProperties: false
-                properties:
-                  orderId:
-                    $ref: '#/components/schemas/GWOrderId'
-          description: 'Logistics order accepted, confirmation will be sent later'
         '400':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorMessage'
           description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
         '401':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorMessage'
           description: Unauthorized
-        '409':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorMessage'
+        '409':
           description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
       callbacks:
         onSuccess:
           '{$request.body.callbacks.successCallback}':
             post:
               requestBody:
-                required: true
-                description: 'payload for the success event, logisticsOrder has been created'
+                description: payload for the success event, logisticsOrder has been created
                 content:
                   application/json:
                     schema:
-                      type: object
-                      properties:
-                        orderId:
-                          $ref: '#/components/schemas/GWOrderId'
-                        customerOrder:
-                          $ref: '#/components/schemas/Reference/properties/reference'
-                        timestamp:
-                          $ref: '#/components/schemas/DateTime'
-                        status:
-                          $ref: '#/components/schemas/EventCallback'
-              responses:
-                '200':
-                  description: Your server returns this code if it accepts the callback
-        onFullfillment:
-          '{$request.body.callbacks.fullfillmentCallback}':
-            post:
-              requestBody:
-                required: true
-                description: 'payload for the success event, logisticsOrder has been created'
-                content:
-                  application/json:
-                    schema:
+                      required:
+                        - customerOrder
+                        - orderId
+                        - status
+                        - timestamp
                       type: object
                       properties:
                         orderId:
@@ -117,167 +91,188 @@ paths:
                         timestamp:
                           $ref: '#/components/schemas/DateTime'
                         transportProduct:
-                          $ref: >-
-                            #/components/schemas/TransportProduct/properties/product
+                          $ref: '#/components/schemas/TransportProduct/properties/product'
                         trackingUrl:
-                          description: >-
-                            tracking link for this fulfilment, if transport is
-                            booked (no self-pickup)
                           type: string
+                          description: tracking link for this fulfilment, if transport is booked (no self-pickup)
                           format: url
                         status:
                           $ref: '#/components/schemas/EventCallback'
+                required: true
               responses:
                 '200':
                   description: Your server returns this code if it accepts the callback
-      x-throttling-tier: 1KPerMin
+        onFulfillment:
+          '{$request.body.callbacks.fulfillmentCallback}':
+            post:
+              requestBody:
+                description: payload for the success event, logisticsOrder has been created
+                content:
+                  application/json:
+                    schema:
+                      required:
+                        - customerOrder
+                        - orderId
+                        - status
+                        - timestamp
+                        - transportProduct
+                      type: object
+                      properties:
+                        orderId:
+                          $ref: '#/components/schemas/GWOrderId'
+                        customerOrder:
+                          $ref: '#/components/schemas/Reference/properties/reference'
+                        timestamp:
+                          $ref: '#/components/schemas/DateTime'
+                        transportProduct:
+                          $ref: '#/components/schemas/TransportProduct/properties/product'
+                        trackingUrl:
+                          type: string
+                          description: tracking link for this fulfilment, if transport is booked (no self-pickup)
+                          format: url
+                        status:
+                          $ref: '#/components/schemas/EventCallback'
+                required: true
+              responses:
+                '200':
+                  description: Your server returns this code if it accepts the callback
       security:
-        - oAuthGW:
-            - API_LOGISTICS_ORDER_CREATE
-  '/logistics-order/{orderId}/current-status':
+        - default:
+            - API_CUSAPI_LOGISTICS_ORDER_CREATE
+      x-throttling-tier: 1KPerMin
+  /logistics-order/{orderId}/current-status:
     get:
+      summary: by identifying your logistics-order using the orderId in the path, you get the current status of the logistics-order
+      operationId: getStatusByOrderId
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            $ref: '#/components/schemas/GWOrderId'
+        - name: calculateETA
+          in: query
+          description: includes the calculation of an ETA if it is a logistics order
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: boolean
+            default: false
+        - name: accept-language
+          in: header
+          description: set the response language, default is en-US - defines the language following the BCP 47 standard https://tools.ietf.org/html/bcp47
+          required: false
+          style: simple
+          explode: false
+          schema:
+            $ref: '#/components/schemas/Language'
       responses:
         '200':
+          description: Ok
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/OrderCurrentStatus'
-          description: Ok
         '400':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorMessage'
           description: Bad Request
-        '401':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorMessage'
+        '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
         '404':
           description: Not Found
+      security:
+        - default:
+            - API_CUSAPI_LOGISTICS_ORDER_READ
+      x-scope: API_LOGISTICS_ORDER_READ
+      x-auth-type: Application & Application User
+      x-throttling-tier: 1KPerMin
+  /logistics-order/{orderId}/:
+    get:
+      summary: by identifying your logistics-order using the orderId in the path, you get the data of the logistics-order
+      operationId: getLogisticsOrderByOrderId
       parameters:
-        - required: true
+        - name: orderId
           in: path
-          name: orderId
+          required: true
+          style: simple
+          explode: false
           schema:
             $ref: '#/components/schemas/GWOrderId'
-        - in: query
-          description: includes the calculation of an ETA if it is a logistics order
-          name: calculateETA
-          schema:
-            default: false
-            type: boolean
-        - in: header
-          description: >-
-            set the response language, default is en-US - defines the language
-            following the BCP 47 standard https://tools.ietf.org/html/bcp47
-          name: accept-language
+        - name: accept-language
+          in: header
+          description: set the response language, default is en-US - defines the language following the BCP 47 standard https://tools.ietf.org/html/bcp47
+          required: false
+          style: simple
+          explode: false
           schema:
             $ref: '#/components/schemas/Language'
-      x-scope: API_LOGISTICS_ORDER_READ
-      summary: >-
-        by identifying your logistics-order using the orderId in the path, you
-        get the current status of the logistics-order
-      x-auth-type: Application & Application User
-      security:
-        - oAuthGW:
-            - API_LOGISTICS_ORDER_READ
-      x-throttling-tier: 1KPerMin
-      operationId: getStatusByOrderId
-  '/logistics-order/{orderId}/':
-    get:
       responses:
         '200':
+          description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/LogisticsOrder'
-          description: OK
         '400':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorMessage'
           description: Bad Request
-        '401':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorMessage'
+        '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
         '404':
           description: Not Found
-      parameters:
-        - required: true
-          in: path
-          name: orderId
-          schema:
-            $ref: '#/components/schemas/GWOrderId'
-        - in: header
-          description: >-
-            set the response language, default is en-US - defines the language
-            following the BCP 47 standard https://tools.ietf.org/html/bcp47
-          name: accept-language
-          schema:
-            $ref: '#/components/schemas/Language'
-      x-scope: API_LOGISTICS_ORDER_READ
-      summary: >-
-        by identifying your logistics-order using the orderId in the path, you
-        get the data of the logistics-order
-      x-auth-type: Application & Application User
       security:
-        - oAuthGW:
-            - API_LOGISTICS_ORDER_READ
+        - default:
+            - API_CUSAPI_LOGISTICS_ORDER_READ
+      x-scope: API_LOGISTICS_ORDER_READ
+      x-auth-type: Application & Application User
       x-throttling-tier: 1KPerMin
-      operationId: getLogisticsOrderByOrderId
 components:
-  securitySchemes:
-    oAuthGW:
-      type: oauth2
-      description: This API uses OAuth 2 with the client credential grant flow.
-      flows:
-        clientCredentials:
-          scopes:
-            API_LOGISTICS_ORDER_CREATE: API_LOGISTICS_ORDER_CREATE
-            API_LOGISTICS_ORDER_READ: API_LOGISTICS_ORDER_READ
-          tokenUrl: 'https://apitest.gw-world.com:443/token'
-    default:
-      type: oauth2
-      flows:
-        implicit:
-          authorizationUrl: 'https://apitest.gw-world.com:443/authorize'
-          scopes:
-            API_LOGISTICS_ORDER_READ: API_LOGISTICS_ORDER_READ
   schemas:
     Country:
+      type: string
+      description: defines the country following IS-3166-1 Alpha2, see https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
       format: iso-3166
-      type: string
       example: AT
-      description: >-
-        defines the country folowing IS-3166-1 Alpha2, see
-        https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
     DateTime:
-      format: date-time
-      type: string
-      example: '2017-07-21T17:32:28.000+02:00'
       maxLength: 29
-      description: >-
-        date / time in format yyyy-mm-ddThh:mm:ss.mmm±hh:mm following the RFC
-        3339 standard, see https://tools.ietf.org/html/rfc3339
+      type: string
+      description: date / time in format yyyy-mm-ddThh:mm:ss.mmm±hh:mm following the RFC 3339 standard, see https://tools.ietf.org/html/rfc3339
+      format: date-time
     GWCustomerId:
-      description: customer account numnber of GW
-      format: int32
       maximum: 9999999
       minimum: 100000
       type: integer
+      description: customer account number of GW
+      format: int32
       example: 123456
+    CustomerOrder:
+      type: string
+      description: reference from the customer
+      example: customer_order
     Incoterm:
       type: object
-      description: Incoterm code and location
       properties:
         code:
+          type: string
+          description: code according to Incoterms 2020
+          example: DPU
           enum:
             - EXW
             - FCA
@@ -290,38 +285,35 @@ components:
             - FOB
             - CFR
             - CIF
-          type: string
-          description: code accordring to Incoterms 2020
-          example: DPU
         location:
           type: string
           description: place for the incoterm
           example: Wien
+      description: Incoterm code and location
     MyGWStatusCode:
+      type: string
+      description: status as in myGW shown
+      example: OPEN
       enum:
         - OPEN
         - IN_PROGRESS
         - ATTENTION
         - CRITICAL
         - COMPLETED
-      type: string
-      description: status as in myGW shown
-      example: OPEN
     GeoLocation:
-      description: geographical location in longitude and latitude
       type: object
       properties:
         latitude:
-          description: latitude of the event location if available
           type: number
+          description: latitude of the event location if available
           example: 47.4671709
         longitude:
-          description: longitude of the event location if available
           type: number
+          description: longitude of the event location if available
           example: 9.6720238
+      description: geographical location in longitude and latitude
     Location:
       type: object
-      description: location e.g. of a status event
       properties:
         locationInformation:
           type: string
@@ -331,82 +323,77 @@ components:
           $ref: '#/components/schemas/Country'
         geoLocation:
           $ref: '#/components/schemas/GeoLocation'
+      description: location e.g. of a status event
     Address:
-      description: address
       type: object
       properties:
         name1:
-          description: name 1 of the address
-          type: string
           maxLength: 35
+          type: string
+          description: name 1 of the address
           example: name 1
         name2:
-          description: name 2 of the address
-          type: string
           maxLength: 35
+          type: string
+          description: name 2 of the address
           example: name 2
         name3:
-          description: name 3 of the address
-          type: string
           maxLength: 35
+          type: string
+          description: name 3 of the address
           example: name 3
         name4:
-          description: name 4 of the address
-          type: string
           maxLength: 35
+          type: string
+          description: name 4 of the address
           example: name 4
         street1:
-          description: street 1 of the address
-          type: string
           maxLength: 35
+          type: string
+          description: street 1 of the address
           example: street 1
         street2:
-          description: street 2 of the address
           maxLength: 35
           type: string
+          description: street 2 of the address
           example: street 2
         street3:
-          description: street 3 of the address
           maxLength: 35
           type: string
+          description: street 3 of the address
           example: street 3
         postbox:
-          description: postbox of the address
           maxLength: 9
           type: string
+          description: postbox of the address
           example: postbox
         city:
-          description: city of the address
           maxLength: 35
           type: string
+          description: city of the address
           example: Lauterach
         zipCode:
-          description: zipcode of the address
           maxLength: 9
           type: string
+          description: zipcode of the address
           example: '6923'
         countryCode:
           $ref: '#/components/schemas/Country'
         state:
-          description: state or province or territory of the address
           type: string
+          description: state or province or territory of the address
           example: Vorarlberg
         location:
+          description: location information
           allOf:
             - $ref: '#/components/schemas/Location'
-          description: location information
+      description: address
     Date:
-      format: date
       type: string
-      example: '2020-03-10'
       description: date in format yyyy-mm-dd
+      format: date
     Translation:
       type: object
-      description: >-
-        the translation object returns a translated text. It shows the requested
-        language, as well as the orignial text. If feasible the origninal text
-        is translated to the requested language. If not feasible, the resolved
-        text contains the English translation
       properties:
         languageRequested:
           $ref: '#/components/schemas/Language'
@@ -414,28 +401,26 @@ components:
           $ref: '#/components/schemas/LingualText'
         translationOriginal:
           $ref: '#/components/schemas/LingualText'
+      description: the translation object returns a translated text. It shows the requested language, as well as the original text. If feasible the original text is translated to the requested language. If not feasible, the resolved text contains the English translation
     EtaInfo:
       type: object
-      description: describes a time window for the estimated time of arrival
       properties:
         estimatedTimeOfArrivalMin:
           $ref: '#/components/schemas/DateTime'
         estimatedTimeOfArrivalMax:
           $ref: '#/components/schemas/DateTime'
         etaSpecification:
+          type: string
+          description: how is the ETA calculated, what does it express
+          example: ETA at recipient
           enum:
             - ATA at recipient
             - ETA at recipient
             - ATA at destination (air)port
             - ETA at destination (air)port
-          type: string
-          description: 'how is the ETA calculated, what does it express'
-          example: ETA at recipient
+      description: describes a time window for the estimated time of arrival
     LingualText:
       type: object
-      description: >-
-        this object contains a text plus the language identifier, showing the
-        language of the given text
       properties:
         text:
           type: string
@@ -443,22 +428,25 @@ components:
           example: lorem ipsum
         language:
           $ref: '#/components/schemas/Language'
+      description: this object contains a text plus the language identifier, showing the language of the given text
     GWOrderId:
-      minLength: 10
       maxLength: 10
-      type: string
-      example: ABC4567890
+      minLength: 10
       pattern: '[0-9A-Z]{10}'
+      type: string
       description: the GW orderId is always a 10 digit number
+      example: ABC4567890
+    GWWarehouseId:
+      maxLength: 12
+      minLength: 10
+      type: string
+      example: 123456_ABC
     OrderReferenced:
-      description: >-
-        shortest form of an order information, used to identify the referenced
-        order in responses
-      type: object
       required:
-        - orderId
-        - customerId
         - creationDate
+        - customerId
+        - orderId
+      type: object
       properties:
         customerId:
           $ref: '#/components/schemas/GWCustomerId'
@@ -467,51 +455,69 @@ components:
         creationDate:
           $ref: '#/components/schemas/Date'
         references:
-          description: references of the order
-          type: array
           uniqueItems: true
+          type: array
+          description: references of the order
           items:
             $ref: '#/components/schemas/Reference'
+      description: shortest form of an order information, used to identify the referenced order in responses
     Reference:
-      description: general reference
       type: object
       properties:
         qualifier:
           type: string
           description: qualifier for the reference
-          enum:
-            - CUSTOMER_ORDER
-            - GENERAL
-            - AIR_WAYBILL
-            - HOUSE_AWB
-            - PARCEL_ID
-            - POSITION_NUMBER
-            - CONSIGNEE_SHIPMENT_NUMBER
-            - MASTER_LABEL_NUMBER
-            - CROSSDOCKING_ID
-            - QUALITY_VALUATION_NUMBER
-            - DELIVERY_NOTE
-            - MOVEMENT_REFERENCE_NUMBER
-            - PURCHASE_ORDER_NUMBER
-            - RESERVATION_NUMBER
-            - WAREHOUSE_RECEIPT_ID
-            - EXTERNAL_ORDERTYPE
           example: GENERAL
+          enum:
+            - GENERAL
+            - DELIVERY_NOTE
+            - EXTERNAL_ORDERTYPE
         reference:
-          description: reference string
-          type: string
           maxLength: 35
+          type: string
+          description: reference string
           example: '12345'
+      description: general reference
+    CustomizedInformation:
+      type: object
+      properties:
+        qualifier:
+          type: string
+          description: qualifier for the customized information
+          example: CUSTOMIZED_INFORMATION1
+          enum:
+            - CUSTOMIZED_INFORMATION1
+            - CUSTOMIZED_INFORMATION2
+            - CUSTOMIZED_INFORMATION3
+            - CUSTOMIZED_INFORMATION4
+            - CUSTOMIZED_INFORMATION5
+            - CUSTOMIZED_INFORMATION6
+            - CUSTOMIZED_INFORMATION7
+            - CUSTOMIZED_INFORMATION8
+            - CUSTOMIZED_INFORMATION9
+            - CUSTOMIZED_INFORMATION10
+            - CUSTOMIZED_INFORMATION11
+            - CUSTOMIZED_INFORMATION12
+            - CUSTOMIZED_INFORMATION13
+            - CUSTOMIZED_INFORMATION14
+            - CUSTOMIZED_INFORMATION15
+            - CUSTOMIZED_INFORMATION16
+            - CUSTOMIZED_INFORMATION17
+            - CUSTOMIZED_INFORMATION18
+            - CUSTOMIZED_INFORMATION19
+            - CUSTOMIZED_INFORMATION20
+        reference:
+          type: string
+          description: reference string
+          example: customized information
+      description: customized information
     ErrorMessage:
       type: object
-      additionalProperties: false
-      description: standard structure for response messages
       properties:
         text:
           $ref: '#/components/schemas/Translation'
         logInfo:
           type: object
-          description: structured information for GW support
           properties:
             code:
               type: string
@@ -525,40 +531,34 @@ components:
               type: string
               description: GW log entry id
               example: 1234567-0
+          description: structured information for GW support
+      additionalProperties: false
+      description: standard structure for response messages
     Language:
-      format: bcp47
-      type: string
-      example: de-DE
       maxLength: 5
       pattern: '[a-z][a-z]\-[A-Z][A-Z]'
-      description: >-
-        defines the language following the BCP 47 standard
-        https://tools.ietf.org/html/bcp47
+      type: string
+      description: defines the language following the BCP 47 standard https://tools.ietf.org/html/bcp47
+      format: bcp47
+      example: de-DE
     AddressReference:
-      description: adds additional references to an address
       type: object
       properties:
         qualifier:
-          description: qualifier for the address reference
           type: string
+          description: qualifier for the address reference
+          example: GENERAL
           enum:
             - CUSTOMER_ID
-            - PURCHASER_ID
             - GENERAL
-            - ADDRESS_ID
-            - ACCOUNT_NUMBER
-            - WAREHOUSE_ID
-            - GLN_ID
-            - SCAC_CODE
-          example: GENERAL
         reference:
-          description: reference ID for the address with the given qualification
-          type: string
           maxLength: 35
+          type: string
+          description: reference ID for the address with the given qualification
           example: '12345'
+      description: adds additional references to an address
     Contact:
       type: object
-      description: contact information
       properties:
         function:
           type: string
@@ -591,22 +591,24 @@ components:
           description: phone number of the contact
           example: +43/1/234
         salutation:
+          type: string
+          description: salutation of the contact
+          example: Mister
           enum:
             - Mister
             - Misses
             - Miss
             - ''
-          type: string
-          description: salutation of the contact
-          example: Mister
         email:
-          format: email
           type: string
-          example: max@mustermann.info
           description: email of the contact
+          format: email
+          example: max@mustermann.info
+      description: contact information
     GWEventCode:
-      description: gives a coded status for the order
       type: string
+      description: gives a coded status for the order
+      example: RDGW300
       enum:
         - RDGW100
         - RDGW165
@@ -682,14 +684,13 @@ components:
         - '*LS2*105'
         - '*LS2*110'
         - '*LS2*120'
-      example: RDGW300
     Measurement:
-      description: measure object to represent a measuer like a weight
       type: object
       properties:
         measureQualifier:
-          description: type of the measure
           type: string
+          description: type of the measure
+          example: GROSS_WEIGHT
           enum:
             - NET_WEIGHT
             - GROSS_WEIGHT
@@ -704,10 +705,10 @@ components:
             - FLOOR_SPACE
             - TOTAL_DISTANCE
             - TOLL_DISTANCE
-          example: GROSS_WEIGHT
         measureUnit:
-          description: unit of the measure
           type: string
+          description: unit of the measure
+          example: KGM
           enum:
             - FAH
             - FOT
@@ -725,17 +726,16 @@ components:
             - MTQ
             - MTR
             - SMI
-          example: KGM
         measure:
-          description: >-
-            value of the measure, e.g. the weight. Respect the number of
-            decimals allowed. For weights 0 decimals. For distances 1 decimal.
-            For floor spaces 2 decimals. For volumes 3 decimals. For temperature
-            1 decimal.
           type: number
+          description: value of the measure, e.g. the weight. Respect the number of decimals allowed. For weights 0 decimals. For distances 1 decimal. For floor spaces 2 decimals. For volumes 3 decimals. For temperature 1 decimal.
           format: float
           example: 123
+      description: measure object to represent a measure like a weight
     GWEventReasonCode:
+      type: string
+      description: gives and additional reason code, not mandatory
+      example: additional reason code
       enum:
         - '1'
         - '2'
@@ -826,66 +826,57 @@ components:
         - MOB
         - PC1
         - RA1
-      type: string
-      description: 'gives and additional reason code, not mandatory'
-      example: additional reason code
     GoodsItem:
-      description: goods information
-      type: object
       required:
-        - measurements
-        - position
         - description
-        - quantity
+        - measurements
         - packageType
+        - position
+        - quantity
+      type: object
       properties:
         position:
           type: string
           description: position of goods
           example: P1
         quantity:
-          type: number
-          format: float
-          description: defines the quantity of shipping units
-          minimum: 0.001
           maximum: 999999.999
+          minimum: 0.001
+          type: number
+          description: defines the quantity of shipping units
+          format: float
           example: 3.25
         packageType:
-          description: >-
-            the package type is following the UN/ECE recommmondation 21, using 2
-            character codes
           $ref: '#/components/schemas/PackageType'
         description:
+          maxLength: 200
           type: string
           description: description of goods
-          maxLength: 200
           example: goods example
         stackable:
           type: boolean
           description: indicates the stackabiltiy of the goods
-          default: false
           example: false
+          default: false
         measurements:
-          description: goods measurements
-          type: array
           uniqueItems: true
+          type: array
+          description: goods measurements
           items:
             $ref: '#/components/schemas/Measurement'
         dimensions:
-          description: goods dimension
           $ref: '#/components/schemas/Dimension'
         references:
-          description: goods references
-          type: array
           uniqueItems: true
+          type: array
+          description: goods references
           items:
             $ref: '#/components/schemas/GoodsItemReference'
+      description: goods information
     PackageType:
-      description: >-
-        the package type is following the UN/ECE recommmondation 21, using 2
-        character codes. See
-        https://www.unece.org/fileadmin/DAM/cefact/recommendations/rec21/rec21rev4_ecetrd309.pdf
       type: string
+      description: the package type is following the UN/ECE recommendation 21, using 2 character codes. See https://www.unece.org/fileadmin/DAM/cefact/recommendations/rec21/rec21rev4_ecetrd309.pdf
+      example: UC
       enum:
         - UC
         - CV
@@ -894,37 +885,35 @@ components:
         - BE
         - PB
         - PK
-      example: ''
     Dimension:
-      description: goods dimension
       type: object
       properties:
         length:
           type: number
-          format: float
           description: goods length
+          format: float
           example: 1.2
         width:
           type: number
-          format: float
           description: goods width
+          format: float
           example: 0.8
         height:
           type: number
-          format: float
           description: goods height
+          format: float
           example: 1.8
         dimensionUnit:
           type: string
+          description: unit for the dimension
+          example: MTR
           enum:
             - MTR
             - MMT
             - FOT
             - INH
-          description: unit for the dimension
-          example: MTR
+      description: goods dimension
     Event:
-      description: 'status object, collecting all information of a status event'
       type: object
       properties:
         eventCode:
@@ -932,8 +921,8 @@ components:
         eventDateTime:
           $ref: '#/components/schemas/DateTime'
         eventSignee:
-          description: Person (or system) which reported the event or signed it
           type: string
+          description: Person (or system) which reported the event or signed it
           example: Michael Beck
         eventDescription:
           $ref: '#/components/schemas/Translation'
@@ -947,9 +936,11 @@ components:
           $ref: '#/components/schemas/Translation'
         eventMetaCode:
           $ref: '#/components/schemas/GWEventMetaCode'
+      description: status object, collecting all information of a status event
     GWEventMetaCode:
-      description: gives a meta status for the order
       type: string
+      description: gives a meta status for the order
+      example: UNLOADED
       enum:
         - RECEIVED
         - DELIVERY_PREVENTED
@@ -985,27 +976,14 @@ components:
         - COMPLETED
         - IN_PLANNING
         - OUTBOUND_STORAGE
-      example: UNLOADED
     EventCallback:
       type: object
-      description: 'status object, collecting status and translation information'
       properties:
-        eventCode:
-          $ref: '#/components/schemas/GWEventCode'
         eventMetaCode:
           $ref: '#/components/schemas/GWEventMetaCode'
-        eventReasonCode:
-          $ref: '#/components/schemas/GWEventReasonCode'
-        eventDescription:
-          $ref: '#/components/schemas/Translation'
-        eventReason:
-          $ref: '#/components/schemas/Translation'
+      description: status object, collecting status and translation information
     OrderCurrentStatus:
       type: object
-      additionalProperties: false
-      description: >-
-        contains a referenced order with the actual status and (if feasible) the
-        estimated time of arrival
       properties:
         etaInfo:
           $ref: '#/components/schemas/EtaInfo'
@@ -1013,75 +991,22 @@ components:
           $ref: '#/components/schemas/Event'
         orderReferenced:
           $ref: '#/components/schemas/OrderReferenced'
+      additionalProperties: false
+      description: contains a referenced order with the actual status and (if feasible) the estimated time of arrival
     CallbackUrl:
-      description: >-
-        defines the URL for an asynchronous callback. Must include https (only
-        secured transfer allowed)
       type: string
+      description: defines the URL for an asynchronous callback. Must include https (only secured transfer allowed)
       format: url
-      example: 'https://ms-server.com/mycallbackurl'
-    GWWarehouseId:
-      type: object
-      description: object identifying a warehouse
-      properties:
-        customerId:
-          $ref: '#/components/schemas/GWCustomerId'
-        warehouseLocation:
-          minLength: 3
-          maxLength: 6
-          type: string
-          enum:
-            - GWATL
-            - GWCHI
-            - GWLAX
-            - GWTEST
-            - GWTOR
-            - GWVAN
-            - GWALT
-            - GWALY
-            - GWBAS
-            - GWBRN
-            - GWBUK
-            - GWCKG
-            - GWCTU
-            - GWDUN
-            - GWDXB
-            - GWFEL
-            - GWGRA
-            - GWGYO
-            - GWHCM
-            - GWHKG
-            - GWHall
-            - GWJEN
-            - GWLAU
-            - GWLIN
-            - GWMEM
-            - GWMLD
-            - GWMSA
-            - GWNUR
-            - GWOST
-            - GWPAS
-            - GWPOC
-            - GWSEN
-            - GWSGP
-            - GWSZX
-            - GWIBI
-            - GWTEC
-            - GWTUT
-            - GWTYO
-            - GWWOL
-            - GWWOR
-            - GWZAG
-          example: GWLAU
+      example: https://ms-server.com/mycallbackurl
     LogisticsAddress:
-      type: object
-      description: >-
-        specific object to contain an address for a given purpose within a
-        transport order
       required:
         - addressType
+      type: object
       properties:
         addressType:
+          type: string
+          description: qualifier for the purpose of the address
+          example: CONSIGNEE
           enum:
             - ORDERBY
             - SUPPLIER
@@ -1093,42 +1018,38 @@ components:
             - GOODS_OWNER
             - BUYER
             - DISTRIBUTOR
-          type: string
-          description: qualifier for the purpose of the address
-          example: supplier
         addressReferences:
-          items:
-            $ref: '#/components/schemas/AddressReference'
           uniqueItems: true
           type: array
           description: references for this address
+          items:
+            $ref: '#/components/schemas/AddressReference'
         address:
-          description: address for this purpose
           $ref: '#/components/schemas/Address'
         contact:
-          description: contact for this address
           $ref: '#/components/schemas/Contact'
+      description: specific object to contain an address for a given purpose within a transport order
     Note:
-      description: object for text notes
       type: object
       properties:
         noteType:
-          description: classification of the note
           type: string
+          description: classification of the note
+          example: GENERAL
           enum:
             - GENERAL
             - DELIVERY_INSTRUCTION
             - PICKUP_INSTRUCTION
-            - TRANSPORT_INSTRUCTION
-          example: GENERAL
         noteText:
-          description: text of the note as LingualText object
           $ref: '#/components/schemas/LingualText'
+      description: object for text notes
     OrderLineReference:
       type: object
-      description: reference for article
       properties:
         qualifier:
+          type: string
+          description: qualifier for the reference
+          example: SERIALNUMBER
           enum:
             - BATCH
             - CROSSDOCKING_ID
@@ -1136,48 +1057,51 @@ components:
             - CUSTOMIZED_ATTRIBUTE1
             - VIRTUALITEM
             - SERIALNUMBER
-            - CUSTOMER_ORDER
-            - PURCHASE_ORDER_NUMBER
-            - PURCHASER_ARTICLE_ID
             - SUPPLIER_ARTICLE_ID
-          type: string
-          description: qualifier for the reference
-          example: CUSTOMER_ORDER
+            - CONSIGNEE_ARTICLE_ID
         reference:
           type: string
           example: abc123123
+      description: reference for article
     OrderLineNote:
       type: object
-      description: object for text notes
       properties:
         noteText:
           $ref: '#/components/schemas/LingualText'
         noteType:
+          type: string
+          description: classification of the note
+          example: DELIVERYNOTE
           enum:
             - DELIVERYNOTE
             - WAREHOUSE_INSTRUCTION
             - HOMEDELIVERY
-          type: string
-          description: classification of the note
-          example: DELIVERYNOTE
+      description: object for text notes
     OrderLine:
+      required:
+        - lineItemNumber
       type: object
-      description: an identified but not specified packing item on a transport
       properties:
         articleId:
           type: string
           description: article identification number
-          example: 3
+          example: '3'
         lineItemNumber:
-          type: integer
           maximum: 99999
+          type: integer
           description: unique customer line item number
           example: 5
         references:
-          type: array
           uniqueItems: true
+          type: array
           items:
             $ref: '#/components/schemas/OrderLineReference'
+        customizedInformation:
+          maxItems: 20
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomizedInformation'
         quantity:
           type: number
           description: quantity of article
@@ -1187,12 +1111,13 @@ components:
           description: article variant
           example: test1
         notes:
+          type: array
           items:
             $ref: '#/components/schemas/OrderLineNote'
-          type: array
+      description: an identified but not specified packing item on a transport
     Currency:
-      description: 'currency following ISO-42-17, see https://en.wikipedia.org/wiki/ISO_4217'
       type: string
+      description: currency following ISO-42-17, see https://en.wikipedia.org/wiki/ISO_4217
       format: iso-4217
       example: EUR
     Value:
@@ -1201,6 +1126,7 @@ components:
         qualifier:
           type: string
           description: type of amount
+          example: GOODS_VALUE
           enum:
             - GOODS_VALUE
             - INSURANCE_VALUE
@@ -1213,12 +1139,12 @@ components:
         currency:
           $ref: '#/components/schemas/Currency'
     TransportProduct:
-      description: specification of the required GW transport product
       type: object
       properties:
         product:
-          description: definition of the GW transport product
           type: string
+          description: definition of the GW transport product
+          example: GW_PRO_LINE
           enum:
             - GW_PRO_LINE
             - GW_DIRECT_LINE
@@ -1228,13 +1154,20 @@ components:
             - GW_HOME_DELIVERY
             - DPD
             - EURO_EXPRESS
-          example: GW_PRO_LINE
+            - UPS
+            - FEDEX
+            - POST_AT
+            - GLS
+            - DHL_EXPRESS
+            - SELF_PICKUP
+            - RAIL
+            - 3GTMS
+            - ROAD
+            - SF
         productServiceLevel:
-          description: >-
-            definition of the GW service level of the product. Available service
-            levels depend on the transport product plus the relation of the
-            transport plus your contract with GW.
           type: string
+          description: definition of the GW service level of the product. Available service levels depend on the transport product plus the relation of the transport plus your contract with GW.
+          example: STD
           enum:
             - STD
             - EXP
@@ -1246,22 +1179,21 @@ components:
             - D10
             - D12
             - D16
-          example: STD
         productServiceLevelText:
-          description: service level of product expressed in text. Read-only!
           $ref: '#/components/schemas/Translation'
         additionalServices:
+          uniqueItems: true
           type: array
           items:
             $ref: '#/components/schemas/AdditionalServiceTransport'
-          uniqueItems: true
+      description: specification of the required GW transport product
     GoodsItemReference:
-      description: reference for goods item
       type: object
       properties:
         qualifier:
           type: string
           description: qualifier for the reference
+          example: GENERAL
           enum:
             - CUSTOMER_ORDER
             - GENERAL
@@ -1275,22 +1207,21 @@ components:
             - RESERVATION_NUMBER
             - WAREHOUSE_RECEIPT_ID
             - CALL_OFF_ID
-          example: general
         reference:
-          description: reference string
-          type: string
           maxLength: 20
+          type: string
+          description: reference string
           example: '12345'
+      description: reference for goods item
     LogisticsRequirements:
       type: object
-      description: information about the required transport
       properties:
         incoterm:
           $ref: '#/components/schemas/Incoterm'
         notes:
+          type: array
           items:
             $ref: '#/components/schemas/Note'
-          type: array
         transportProduct:
           $ref: '#/components/schemas/TransportProduct'
         logisticsProduct:
@@ -1303,12 +1234,13 @@ components:
           $ref: '#/components/schemas/DateTime'
         completionDateTimeMax:
           $ref: '#/components/schemas/DateTime'
+        deliveryDateTimeMin:
+          $ref: '#/components/schemas/DateTime'
+        deliveryDateTimeMax:
+          $ref: '#/components/schemas/DateTime'
+      description: information about the required transport
     AdditionalServiceLogistics:
       type: object
-      description: >-
-        contains information of an additional service. The availability of an
-        additional service depends on the GW product, in combination with the
-        relation and your contract with GW.
       properties:
         additionalServiceText:
           description: additional service expressed in text. Read-only!
@@ -1319,145 +1251,155 @@ components:
           description: some additional service require additional information
           example: Phone number 012345
         additionalService:
-          enum:
-            - DUMMY
           type: string
           description: additional service coded
           example: DUMMY
+          enum:
+            - DUMMY
+      description: contains information of an additional service. The availability of an additional service depends on the GW product, in combination with the relation and your contract with GW.
     AdditionalServiceTransport:
-      description: >-
-        contains information of an additional service. The availability of an
-        additional service depends on the GW product, in combination with the
-        relation and your contract with GW.
       type: object
       properties:
         additionalService:
-          description: additional service coded
           type: string
+          description: additional service coded
+          example: COD
           enum:
             - ARRIVAL
             - AVISO
             - DGM
             - COD
             - CUSTOMS
-          example: COD
         additionalServiceText:
-          description: additional service expressed in text. Read-only!
           $ref: '#/components/schemas/Translation'
         additionalServiceAttribute:
-          description: some additional service require additional information
           type: string
+          description: some additional service require additional information
           example: Phone number 012345
+      description: contains information of an additional service. The availability of an additional service depends on the GW product, in combination with the relation and your contract with GW.
     LogisticsProduct:
       type: object
-      description: specification of the required GW logistics product
       properties:
         product:
-          enum:
-            - INBOUND
-            - OUTBOUND
           type: string
           description: definition of the GW logistics product
-          example: GW
+          example: OUTBOUND_DELIVERY
+          enum:
+            - OUTBOUND_DELIVERY
         productServiceLevel:
+          type: string
+          description: definition of the GW service level of the product. Available service levels depend on the logistics product plus your contract with GW.
+          example: STANDARD
           enum:
             - STANDARD
-          type: string
-          description: >-
-            definition of the GW service level of the product. Available service
-            levels depend on the logistics product plus your contract with GW.
-          example: STANDARD
         cargoType:
           type: string
-          description: >-
-            can be defined per customer; for special transport-routing; or
-            special pricing-calculation (sortage-criteria)
+          description: can be defined per customer; for special transport-routing; or special pricing-calculation (sortage-criteria)
           example: cargotype
         productServiceLevelText:
           $ref: '#/components/schemas/Translation'
         additionalServices:
+          uniqueItems: true
+          type: array
           items:
             $ref: '#/components/schemas/AdditionalServiceLogistics'
-          type: array
-          uniqueItems: true
+      description: specification of the required GW logistics product
     LogisticsOrder:
-      type: object
-      additionalProperties: false
-      description: object for a logistics order
       required:
         - creationDateTime
-        - references
+        - customerOrder
         - logisticsAddresses
         - orderLines
+      type: object
       properties:
         orderId:
           $ref: '#/components/schemas/GWOrderId'
         customerId:
           $ref: '#/components/schemas/GWCustomerId'
+        customerOrder:
+          $ref: '#/components/schemas/CustomerOrder'
         creationDateTime:
           $ref: '#/components/schemas/DateTime'
         warehouseId:
           $ref: '#/components/schemas/GWWarehouseId'
         references:
+          uniqueItems: true
+          type: array
+          description: array of references for this order
           items:
             $ref: '#/components/schemas/Reference'
-          type: array
+        customizedInformation:
+          maxItems: 20
           uniqueItems: true
-          description: array of references for this order
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomizedInformation'
         logisticsAddresses:
+          minItems: 1
+          uniqueItems: true
+          type: array
+          description: involved addresses for this logistics order
           items:
             $ref: '#/components/schemas/LogisticsAddress'
-          type: array
-          uniqueItems: true
-          minItems: 1
-          description: involved addresses for this logistics order
         logisticsRequirements:
-          description: >-
-            object containing all requirments for the logistic planning and
-            execution
           $ref: '#/components/schemas/LogisticsRequirements'
         orderLines:
-          items:
-            $ref: '#/components/schemas/OrderLine'
-          type: array
+          maxItems: 999
           minItems: 1
           uniqueItems: true
-          maxItems: 999
+          type: array
           description: identified items to be handled
+          items:
+            $ref: '#/components/schemas/OrderLine'
         measurements:
+          uniqueItems: true
+          type: array
           items:
             $ref: '#/components/schemas/Measurement'
-          uniqueItems: true
-          type: array
         dimension:
-          description: dimension of the order
           $ref: '#/components/schemas/Dimension'
         values:
+          uniqueItems: true
+          type: array
           items:
             $ref: '#/components/schemas/Value'
-          uniqueItems: true
-          type: array
         goodsItem:
-          description: packed goods item to be transported
-          type: array
-          uniqueItems: true
           maxItems: 999
+          uniqueItems: true
+          type: array
+          description: packed goods item to be transported
           items:
             $ref: '#/components/schemas/GoodsItem'
-security:
-  - oAuthGW:
-      - API_LOGISTICS_ORDER_CREATE
-      - API_LOGISTICS_ORDER_READ
-x-wso2-security:
-  apim:
-    x-wso2-scopes:
-      - key: API_LOGISTICS_ORDER_CREATE
-        name: API_LOGISTICS_ORDER_CREATE
-        roles: >-
-          I_CUSAPI_LOGISTICS_ORDER_CREATE,EXTERNAL/I_CUSAPI_LOGISTICS_ORDER_CREATE,APPUSER/I_CUSAPI_LOGISTICS_ORDER_CREATE
-        description: This scope provides the right to creaate logistics orders
-      - key: API_LOGISTICS_ORDER_READ
-        name: API_LOGISTICS_ORDER_READ
-        roles: >-
-          I_CUSAPI_LOGISTICS_ORDER_READ,EXTERNAL/I_CUSAPI_LOGISTICS_ORDER_READ,APPUSER/I_CUSAPI_LOGISTICS_ORDER_READ
-        description: 'This scope provides access to logistics order for customer    '
+      additionalProperties: false
+      description: object for a logistics order
+  securitySchemes:
+    default:
+      type: oauth2
+      description: This API uses OAuth 2 with the implicit grant flow.
+      flows:
+        implicit:
+          authorizationUrl: https://test.api.gw-world.com/authorize
+          scopes:
+            API_CUSAPI_LOGISTICS_ORDER_CREATE: This scope provides access to logistics order creation for customers and partners
+            API_CUSAPI_LOGISTICS_ORDER_READ: This scope provides access to logistics order status for customers and partners
+          x-scopes-bindings:
+            API_CUSAPI_LOGISTICS_ORDER_CREATE: GW.INTERNAL/I_CUSAPI_LOGISTICS_ORDER_CREATE,EXTERNAL/I_CUSAPI_LOGISTICS_ORDER_CREATE,APPUSER/I_CUSAPI_LOGISTICS_ORDER_READ
+            API_CUSAPI_LOGISTICS_ORDER_READ: GW.INTERNAL/I_CUSAPI_LOGISTICS_ORDER_READ,EXTERNAL/I_CUSAPI_LOGISTICS_ORDER_READ,APPUSER/I_CUSAPI_LOGISTICS_ORDER_READ
+          x-scopes-mappings:
+            API_CUSAPI_LOGISTICS_ORDER_CREATE:
+              display-name: API_CUSAPI_LOGISTICS_ORDER_CREATE
+            API_CUSAPI_LOGISTICS_ORDER_READ:
+              display-name: API_CUSAPI_LOGISTICS_ORDER_READ
+        clientCredentials:
+          tokenUrl: /token
+          scopes:
+            API_CUSAPI_LOGISTICS_ORDER_CREATE: This scope provides access to logistics order creation for customers and partners
+            API_CUSAPI_LOGISTICS_ORDER_READ: This scope provides access to logistics order status for customers and partners
+          x-scopes-bindings:
+            API_CUSAPI_LOGISTICS_ORDER_CREATE: GW.INTERNAL/I_CUSAPI_LOGISTICS_ORDER_CREATE,EXTERNAL/I_CUSAPI_LOGISTICS_ORDER_CREATE,APPUSER/I_CUSAPI_LOGISTICS_ORDER_READ
+            API_CUSAPI_LOGISTICS_ORDER_READ: GW.INTERNAL/I_CUSAPI_LOGISTICS_ORDER_READ,EXTERNAL/I_CUSAPI_LOGISTICS_ORDER_READ,APPUSER/I_CUSAPI_LOGISTICS_ORDER_READ
+          x-scopes-mappings:
+            API_CUSAPI_LOGISTICS_ORDER_CREATE:
+              display-name: API_CUSAPI_LOGISTICS_ORDER_CREATE
+            API_CUSAPI_LOGISTICS_ORDER_READ:
+              display-name: API_CUSAPI_LOGISTICS_ORDER_READ
