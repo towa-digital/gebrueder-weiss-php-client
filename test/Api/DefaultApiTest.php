@@ -31,14 +31,11 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
-use \Towa\GebruederWeissSDK\Configuration;
 use \Towa\GebruederWeissSDK\ApiException;
-use \Towa\GebruederWeissSDK\ObjectSerializer;
 use PHPUnit\Framework\TestCase;
 use Towa\GebruederWeissSDK\Api\DefaultApi;
 use Towa\GebruederWeissSDK\Model\ErrorMessage;
 use Towa\GebruederWeissSDK\Model\InlineObject;
-use Towa\GebruederWeissSDK\Model\InlineResponse202;
 use Towa\GebruederWeissSDK\Model\LogisticsOrder;
 use Towa\GebruederWeissSDK\Model\LogisticsOrderCallbacks;
 use Towa\GebruederWeissSDK\Model\Translation;
@@ -114,11 +111,8 @@ class DefaultApiTest extends TestCase
      */
     public function testLogisticsOrderPostSuccessful()
     {
-        $response = new InlineResponse202();
-        $response->setOrderId("1234567890");
-
         $mock = new MockHandler([
-            new Response(202, [], $response),
+            new Response(202, [], null),
         ]);
 
         $handlerStack = HandlerStack::create($mock);
@@ -130,12 +124,11 @@ class DefaultApiTest extends TestCase
         $payload->setLogisticsOrder(new LogisticsOrder());
         $callbacks = new LogisticsOrderCallbacks();
         $callbacks->setSuccessCallback("https://example.com/success");
-        $callbacks->setFullfilledCallback("http://example.com/fullfilled");
+        $callbacks->setFulfillmentCallback("http://example.com/fullfilled");
         $payload->setCallbacks($callbacks);
-
         $response = $api->logisticsOrderPost("de-DE", $payload);
-        
-        $this->assertSame("1234567890", $response->getOrderId());
+
+        $this->assertCount(1, $response);
     }
 
     public function testLogisticsOrderPostBadRequest()
@@ -168,11 +161,11 @@ class DefaultApiTest extends TestCase
             $payload->setLogisticsOrder(new LogisticsOrder());
             $callbacks = new LogisticsOrderCallbacks();
             $callbacks->setSuccessCallback("https://example.com/success");
-            $callbacks->setFullfilledCallback("http://example.com/fullfilled");
+            $callbacks->setFulfillmentCallback("http://example.com/fullfilled");
             $payload->setCallbacks($callbacks);
 
            $api->logisticsOrderPost("de-DE", $payload);
-            $this->assertTrue(false);
+           $this->assertTrue(false);
         } catch (ApiException $e) {
             $this->assertSame($error->getText()->getTranslationOriginal(), $e->getResponseObject()->getText()->getTranslationOriginal()->getText());
         }

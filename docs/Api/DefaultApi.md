@@ -1,6 +1,6 @@
 # Towa\GebruederWeissSDK\DefaultApi
 
-All URIs are relative to https://apitest.gw-world.com:443/logistics/logistics-order/1.0.0.
+All URIs are relative to https://test.api.gw-world.com/logistics/logistics-order/1.0.0.
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -24,7 +24,10 @@ by identifying your logistics-order using the orderId in the path, you get the d
 require_once(__DIR__ . '/vendor/autoload.php');
 
 
-// Configure OAuth2 access token for authorization: oAuthGW
+// Configure OAuth2 access token for authorization: default
+$config = Towa\GebruederWeissSDK\Configuration::getDefaultConfiguration()->setAccessToken('YOUR_ACCESS_TOKEN');
+
+// Configure OAuth2 access token for authorization: default
 $config = Towa\GebruederWeissSDK\Configuration::getDefaultConfiguration()->setAccessToken('YOUR_ACCESS_TOKEN');
 
 
@@ -58,7 +61,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-[oAuthGW](../../README.md#oAuthGW)
+[default](../../README.md#default), [default](../../README.md#default)
 
 ### HTTP request headers
 
@@ -84,7 +87,10 @@ by identifying your logistics-order using the orderId in the path, you get the c
 require_once(__DIR__ . '/vendor/autoload.php');
 
 
-// Configure OAuth2 access token for authorization: oAuthGW
+// Configure OAuth2 access token for authorization: default
+$config = Towa\GebruederWeissSDK\Configuration::getDefaultConfiguration()->setAccessToken('YOUR_ACCESS_TOKEN');
+
+// Configure OAuth2 access token for authorization: default
 $config = Towa\GebruederWeissSDK\Configuration::getDefaultConfiguration()->setAccessToken('YOUR_ACCESS_TOKEN');
 
 
@@ -120,7 +126,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-[oAuthGW](../../README.md#oAuthGW)
+[default](../../README.md#default), [default](../../README.md#default)
 
 ### HTTP request headers
 
@@ -134,7 +140,7 @@ Name | Type | Description  | Notes
 ## `logisticsOrderPost()`
 
 ```php
-logisticsOrderPost($accept_language, $inline_object): \Towa\GebruederWeissSDK\Model\InlineResponse202
+logisticsOrderPost($accept_language, $inline_object): object
 ```
 
 create a logisticsOrder
@@ -148,7 +154,10 @@ posts an logisticsOrder structure to GW to create a new logisticsOrder
 require_once(__DIR__ . '/vendor/autoload.php');
 
 
-// Configure OAuth2 access token for authorization: oAuthGW
+// Configure OAuth2 access token for authorization: default
+$config = Towa\GebruederWeissSDK\Configuration::getDefaultConfiguration()->setAccessToken('YOUR_ACCESS_TOKEN');
+
+// Configure OAuth2 access token for authorization: default
 $config = Towa\GebruederWeissSDK\Configuration::getDefaultConfiguration()->setAccessToken('YOUR_ACCESS_TOKEN');
 
 
@@ -178,11 +187,11 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**\Towa\GebruederWeissSDK\Model\InlineResponse202**](../Model/InlineResponse202.md)
+**object**
 
 ### Authorization
 
-[oAuthGW](../../README.md#oAuthGW)
+[default](../../README.md#default), [default](../../README.md#default)
 
 ### HTTP request headers
 
