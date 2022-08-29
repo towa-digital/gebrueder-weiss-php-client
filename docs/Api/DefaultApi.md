@@ -1,6 +1,6 @@
 # Towa\GebruederWeissSDK\DefaultApi
 
-All URIs are relative to https://test.api.gw-world.com/logistics/logistics-order/1.0.0.
+All URIs are relative to https://my.api.gw-world.com.
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
