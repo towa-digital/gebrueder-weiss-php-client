@@ -10,7 +10,7 @@ info:
   x-apiId: logisticsOrderCustomer
   x-audience: external partner
 servers:
-  - url: https://test.api.gw-world.com/logistics/logistics-order/1.0.0
+  - url: https://my.api.gw-world.com
 paths:
   /logistics-order:
     post:
@@ -1378,7 +1378,7 @@ components:
       description: This API uses OAuth 2 with the implicit grant flow.
       flows:
         implicit:
-          authorizationUrl: https://test.api.gw-world.com/authorize
+          authorizationUrl: https://my.api.gw-world.com/authorize
           scopes:
             API_CUSAPI_LOGISTICS_ORDER_CREATE: This scope provides access to logistics order creation for customers and partners
             API_CUSAPI_LOGISTICS_ORDER_READ: This scope provides access to logistics order status for customers and partners

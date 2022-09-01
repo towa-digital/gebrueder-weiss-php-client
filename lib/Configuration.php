@@ -83,7 +83,7 @@ class Configuration
      *
      * @var string
      */
-    protected $host = 'https://test.api.gw-world.com/logistics/logistics-order/1.0.0';
+    protected $host = 'https://my.api.gw-world.com';
 
     /**
      * User agent of the HTTP request, set to "OpenAPI-Generator/{version}/PHP" by default
@@ -438,7 +438,7 @@ class Configuration
     {
         return [
             [
-                "url" => "https://test.api.gw-world.com/logistics/logistics-order/1.0.0",
+                "url" => "https://my.api.gw-world.com",
                 "description" => "No description provided",
             ]
         ];
