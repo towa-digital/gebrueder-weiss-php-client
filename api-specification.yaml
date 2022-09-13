@@ -10,7 +10,7 @@ info:
   x-apiId: logisticsOrderCustomer
   x-audience: external partner
 servers:
-  - url: https://my.api.gw-world.com
+  - url: https://my.api.gw-world.com/logistics/logistics-order/1.0.0
 paths:
   /logistics-order:
     post:
