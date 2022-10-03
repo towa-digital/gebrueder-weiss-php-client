@@ -41,7 +41,7 @@ use Towa\GebruederWeissSDK\Model\ModelInterface;
 class ObjectSerializer
 {
     /** @var string */
-    private static $dateTimeFormat = \DateTime::ATOM;
+    private static $dateTimeFormat = \DateTime::RFC3339_EXTENDED;
 
     /**
      * Change the date format
@@ -351,7 +351,7 @@ class ObjectSerializer
             // determine file name
             if (
                 is_array($httpHeaders)
-                && array_key_exists('Content-Disposition', $httpHeaders) 
+                && array_key_exists('Content-Disposition', $httpHeaders)
                 && preg_match('/inline; filename=[\'"]?([^\'"\s]+)[\'"]?$/i', $httpHeaders['Content-Disposition'], $match)
             ) {
                 $filename = Configuration::getDefaultConfiguration()->getTempFolderPath() . DIRECTORY_SEPARATOR . self::sanitizeFilename($match[1]);
