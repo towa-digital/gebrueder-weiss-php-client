@@ -373,7 +373,7 @@ components:
           description: city of the address
           example: Lauterach
         zipCode:
-          maxLength: 9
+          maxLength: 10
           type: string
           description: zipcode of the address
           example: '6923'
