@@ -299,8 +299,8 @@ class Address implements ModelInterface, ArrayAccess, \JsonSerializable
             $invalidProperties[] = "invalid value for 'city', the character length must be smaller than or equal to 35.";
         }
 
-        if (!is_null($this->container['zip_code']) && (mb_strlen($this->container['zip_code']) > 9)) {
-            $invalidProperties[] = "invalid value for 'zip_code', the character length must be smaller than or equal to 9.";
+        if (!is_null($this->container['zip_code']) && (mb_strlen($this->container['zip_code']) > 10)) {
+            $invalidProperties[] = "invalid value for 'zip_code', the character length must be smaller than or equal to 10.";
         }
 
         return $invalidProperties;
@@ -589,8 +589,8 @@ class Address implements ModelInterface, ArrayAccess, \JsonSerializable
      */
     public function setZipCode($zip_code)
     {
-        if (!is_null($zip_code) && (mb_strlen($zip_code) > 9)) {
-            throw new \InvalidArgumentException('invalid length for $zip_code when calling Address., must be smaller than or equal to 9.');
+        if (!is_null($zip_code) && (mb_strlen($zip_code) > 10)) {
+            throw new \InvalidArgumentException('invalid length for $zip_code when calling Address., must be smaller than or equal to 10.');
         }
 
         $this->container['zip_code'] = $zip_code;
